@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, request, jsonify, render_template
 import csv
 import os
@@ -23,7 +22,7 @@ def home():
 @app.route("/save", methods=["POST"])
 def save_data():
     try:
-        data = request.get_json()
+        data = request.json  # request.get_json() can be replaced with request.json
 
         if not data:
             return jsonify({"error": "No data received"}), 400
@@ -59,4 +58,4 @@ def save_data():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000, debug=True)
