@@ -1,11 +1,9 @@
 from flask import Flask, request, jsonify, render_template
-import requests
 import csv
 import os
 
 app = Flask(__name__, template_folder=".")
 
-# Local CSV File (Backup Storage)
 FILE_NAME = "customer_data.csv"
 
 # Ensure CSV file exists with headers
@@ -13,32 +11,9 @@ if not os.path.exists(FILE_NAME):
     with open(FILE_NAME, "w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Name", "Age", "Email", "Phone", "Smoke", "Drink", 
-                         "Exercise", "Diet", "Checkups", "Stress", "Sleep", 
-                         "Water", "Medical History", "Tablets", "Health Score", 
-                         "Health Status"])
-
-# Google Form URL (Replace YOUR_FORM_ID with actual ID)
-GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse"
-
-# Google Form Field Entry IDs (Replace with actual IDs)
-FORM_FIELDS = {
-    "name": "entry.1234567890",
-    "age": "entry.2345678901",
-    "email": "entry.3456789012",
-    "phone": "entry.4567890123",
-    "smoke": "entry.5678901234",
-    "drink": "entry.6789012345",
-    "exercise": "entry.7890123456",
-    "diet": "entry.8901234567",
-    "checkups": "entry.9012345678",
-    "stress": "entry.0123456789",
-    "sleep": "entry.1122334455",
-    "water": "entry.2233445566",
-    "medicalHistory": "entry.3344556677",
-    "tablets": "entry.4455667788",
-    "healthScore": "entry.5566778899",
-    "healthStatus": "entry.6677889900"
-}
+                        "Exercise", "Diet", "Checkups", "Stress", "Sleep", 
+                        "Water", "Medical History", "Tablets", "Health Score", 
+                        "Health Status"])
 
 @app.route("/")
 def home():
@@ -47,12 +22,12 @@ def home():
 @app.route("/save", methods=["POST"])
 def save_data():
     try:
-        data = request.json  # Receiving JSON data
+        data = request.json  # request.get_json() can be replaced with request.json
 
         if not data:
             return jsonify({"error": "No data received"}), 400
 
-        # Convert to CSV row
+        # Convert data to a list format for CSV
         row = [
             data.get("name", ""),
             data.get("age", ""),
@@ -72,19 +47,12 @@ def save_data():
             data.get("healthStatus", "")
         ]
 
-        # Append to local CSV file
+        # Append data to the CSV file
         with open(FILE_NAME, "a", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(row)
 
-        # Send data to Google Form
-        form_data = {FORM_FIELDS[key]: value for key, value in data.items() if key in FORM_FIELDS}
-        response = requests.post(GOOGLE_FORM_URL, data=form_data)
-
-        if response.status_code == 200:
-            return jsonify({"message": "Data saved successfully to Google Sheets"}), 200
-        else:
-            return jsonify({"error": "Failed to save data to Google Sheets"}), 500
+        return jsonify({"message": "Data saved successfully"}), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
