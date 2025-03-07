@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Delivery Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0; /* Fixed margin issue */
+        }
+        .container {
+            background: #1e1e1e;
+            padding: 3rem;
+            border-radius: 10px;
+            width: 400px;
+            box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        input, select, button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        button:hover {
+            transform: scale(1.05);
+            background-color: #0056b3;
+        }
+        .logo {
+            width: 8rem;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='pillzet_logo.png') }}" alt="Pillzet Logo" class="logo">
+
+    <div class="container animate__animated animate__fadeInDown">
+        <h2>Medicine Delivery Form</h2>
+        <form id="medicineForm">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="number" id="age" placeholder="Age" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="text" id="phone" placeholder="Phone Number" required>
+            
+            <label>Do you smoke?</label>
+            <select id="smoke" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">No</option>
+                <option value="10">Yes</option>
+            </select>
+            
+            <label>Do you drink alcohol?</label>
+            <select id="drink" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">No</option>
+                <option value="10">Yes</option>
+            </select>
+            
+            <label>Do you exercise regularly?</label>
+            <select id="exercise" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">Yes</option>
+                <option value="10">No</option>
+            </select>
+            
+            <label>Do you follow a balanced diet?</label>
+            <select id="diet" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">Yes</option>
+                <option value="10">No</option>
+            </select>
+            
+            <label>Do you go for regular checkups?</label>
+            <select id="checkups" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">Yes</option>
+                <option value="10">No</option>
+            </select>
+            
+            <label>Do you experience high stress levels?</label>
+            <select id="stress" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">No</option>
+                <option value="10">Yes</option>
+            </select>
+            
+            <label>How many hours do you sleep daily?</label>
+            <select id="sleep" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">More than 6 hours</option>
+                <option value="5">4-6 hours</option>
+                <option value="10">Less than 4 hours</option>
+            </select>
+            
+            <label>How many glasses of water do you drink daily?</label>
+            <select id="water" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="0">More than 8</option>
+                <option value="5">5-8</option>
+                <option value="10">Less than 5</option>
+            </select>
+            
+            <label>Medical History:</label>
+            <input type="text" id="medicalHistory" placeholder="E.g., Diabetes, Hypertension">
+            
+            <label>Tablets Used:</label>
+            <input type="text" id="tablets" placeholder="E.g., Paracetamol, Aspirin">
+            
+            <button type="button" onclick="submitForm()">Submit</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function submitForm() {
+            let formData = {
+                name: document.getElementById("name").value,
+                age: document.getElementById("age").value,
+                email: document.getElementById("email").value,
+                phone: document.getElementById("phone").value,
+                smoke: parseInt(document.getElementById("smoke").value),
+                drink: parseInt(document.getElementById("drink").value),
+                exercise: parseInt(document.getElementById("exercise").value),
+                diet: parseInt(document.getElementById("diet").value),
+                checkups: parseInt(document.getElementById("checkups").value),
+                stress: parseInt(document.getElementById("stress").value),
+                sleep: parseInt(document.getElementById("sleep").value),
+                water: parseInt(document.getElementById("water").value),
+                medicalHistory: document.getElementById("medicalHistory").value,
+                tablets: document.getElementById("tablets").value
+            };
+
+            let healthScore = 100 - (formData.smoke + formData.drink + formData.stress) - 
+                            (formData.exercise + formData.diet + formData.checkups + 
+                             formData.sleep + formData.water);
+            let healthStatus = healthScore >= 80 ? "Good" : 
+                              healthScore >= 60 ? "Average" : 
+                              healthScore >= 40 ? "Below Average" : "Bad";
+            
+            document.getElementById("result").innerHTML = `Health Score: ${healthScore}%<br>Status: ${healthStatus}`;
+            
+            formData.healthScore = healthScore;
+            formData.healthStatus = healthStatus;
+            
+            $.ajax({
+                url: "/save",  // Relative URL since served from Flask
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    console.log("Success:", response);
+                    alert("Data saved successfully!");
+                },
+                error: function(xhr, status, error) {
+                    console.error("Status:", status);
+                    console.error("Error:", error);
+                    console.error("Response:", xhr.responseText);
+                    alert("Error saving data: " + (xhr.responseText || "Unknown error"));
+                }
+            });
+        }
+    </script>
+</body>
+</html>
